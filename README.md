@@ -1,9 +1,8 @@
 # OVHcloud Provider for OAuth 2.0 Client
-[![Latest Version](https://img.shields.io/github/release/carsso/oauth2-ovhcloud.svg?style=flat-square)](https://github.com/carsso/oauth2-ovhcloud/releases)
-[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
-[![Build Status](https://img.shields.io/travis/carsso/oauth2-ovhcloud/master.svg?style=flat-square)](https://travis-ci.org/carsso/oauth2-ovhcloud)
-[![Coverage Status](https://img.shields.io/scrutinizer/coverage/g/carsso/oauth2-ovhcloud.svg?style=flat-square)](https://scrutinizer-ci.com/g/carsso/oauth2-ovhcloud/code-structure)
-[![Quality Score](https://img.shields.io/scrutinizer/g/carsso/oauth2-ovhcloud.svg?style=flat-square)](https://scrutinizer-ci.com/g/carsso/oauth2-ovhcloud)
+[![Source Code](https://img.shields.io/badge/source-carsso/oauth2--ovhcloud-blue.svg?style=flat-square)](https://github.com/carsso/oauth2-ovhcloud)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](https://github.com/carsso/oauth2-ovhcloud/blob/master/LICENSE)
+[![Build Status](https://img.shields.io/github/workflow/status/carsso/oauth2-ovhcloud/CI?label=CI&logo=github&style=flat-square)](https://github.com/carsso/oauth2-ovhcloud/actions?query=workflow%3ACI)
+[![Codecov Code Coverage](https://img.shields.io/codecov/c/gh/carsso/oauth2-ovhcloud?label=codecov&logo=codecov&style=flat-square)](https://codecov.io/gh/carsso/oauth2-ovhcloud)
 [![Total Downloads](https://img.shields.io/packagist/dt/carsso/oauth2-ovhcloud.svg?style=flat-square)](https://packagist.org/packages/carsso/oauth2-ovhcloud)
 
 This package provides OVHcloud OAuth 2.0 support for the PHP League's [OAuth 2.0 Client](https://github.com/thephpleague/oauth2-client).

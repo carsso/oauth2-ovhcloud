@@ -1,65 +1,88 @@
-name: CI
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "CI"
 
 on:
-    pull_request:
-    push:
-        branches: [ master ]
+  pull_request:
+  push:
+    branches:
+      - "main"
+
+env:
+  COMPOSER_ROOT_VERSION: "1.99.99"
 
 jobs:
-    run:
-        runs-on: ubuntu-18.04
-        strategy:
-            fail-fast: false
-            matrix:
-                php:
-                    - '7.3'
-                    - '7.4'
-                    - '8.0'
-                minimum_versions: [false]
-                coverage: ['none']
-                include:
-                    - description: 'Minimum version'
-                      php: '7.3'
-                      minimum_versions: true
-                    - description: 'Log Code Coverage'
-                      php: '7.4'
-                      coverage: 'xdebug'
 
-        name: PHP ${{ matrix.php }} ${{ matrix.description }}
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v2
+  lint:
+    name: "Lint"
+    runs-on: "ubuntu-latest"
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: [ '7.4', '8.0', '8.1' ]
+    steps:
+      - uses: "actions/checkout@v2"
+      - uses: "shivammathur/setup-php@v2"
+        with:
+          php-version: "${{ matrix.php-version }}"
+          coverage: "none"
+          ini-values: "memory_limit=-1, zend.assertions=1, error_reporting=-1, display_errors=On"
+          tools: "composer:v2"
+      - uses: "ramsey/composer-install@v2"
+      - name: "Lint the PHP source code"
+        run: "./vendor/bin/parallel-lint src test"
 
-            - uses: actions/cache@v2
-              with:
-                  path: ~/.composer/cache/files
-                  key: ${{ matrix.php }}
+  coding-standards:
+    name: "Coding Standards"
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v2"
+      - uses: "shivammathur/setup-php@v2"
+        with:
+          php-version: "latest"
+          coverage: "none"
+          ini-values: "memory_limit=-1"
+          tools: "composer:v2"
+      - uses: "ramsey/composer-install@v2"
+      - name: "Check coding standards"
+        run: "./vendor/bin/phpcs src --standard=psr2 -sp --colors"
 
-            - name: Setup PHP
-              uses: shivammathur/setup-php@v2
-              with:
-                  php-version: ${{ matrix.php }}
-                  coverage: ${{ matrix.coverage }}
+  coverage:
+    name: "Coverage"
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v2"
+      - uses: "shivammathur/setup-php@v2"
+        with:
+          php-version: "latest"
+          coverage: "pcov"
+          ini-values: "memory_limit=-1, zend.assertions=1, error_reporting=-1, display_errors=On"
+          tools: "composer"
+      - name: "Prepare for tests"
+        run: "mkdir -p build/logs"
+      - uses: "ramsey/composer-install@v2"
+      - name: "Run unit tests"
+        run: "./vendor/bin/phpunit --colors=always --coverage-clover build/logs/clover.xml --coverage-text"
+      - name: "Publish coverage report to Codecov"
+        uses: "codecov/codecov-action@v2"
 
-            - name: Install dependencies
-              run: composer install
-              if: matrix.minimum_versions == false
-
-            - name: Install dependencies lower
-              run: composer update --no-interaction --prefer-lowest
-              if: matrix.minimum_versions == true
-
-            - name: Run PHPUnit tests
-              run: vendor/bin/phpunit
-              if: matrix.coverage == 'none'
-
-            - name: PHPUnit tests and Log Code coverage
-              run: ./vendor/bin/phpunit --exclude-group proxy --coverage-clover=coverage.xml
-              if: matrix.coverage == 'xdebug'
-
-            - name: Run codecov
-              uses: codecov/codecov-action@v1
-              if: matrix.coverage == 'xdebug'
-              with:
-                  file: './coverage.xml'
-                  fail_ci_if_error: true
+  unit-tests:
+    name: "Unit Tests"
+    runs-on: "ubuntu-latest"
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: [ '7.4', '8.0', '8.1' ]
+    steps:
+      - uses: "actions/checkout@v2"
+      - uses: "shivammathur/setup-php@v2"
+        with:
+          php-version: "${{ matrix.php-version }}"
+          coverage: "none"
+          ini-values: "memory_limit=-1, zend.assertions=1, error_reporting=-1, display_errors=On"
+          tools: "composer"
+      - name: "Prepare for tests"
+        run: "mkdir -p build/logs"
+      - uses: "ramsey/composer-install@v2"
+      - name: "Run unit tests"
+        run: "./vendor/bin/phpunit --colors=always"
