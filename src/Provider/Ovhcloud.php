@@ -19,7 +19,7 @@ class Ovhcloud extends AbstractProvider
      *
      * @var array
      */
-    private $endpoints = [
+    public static $endpoints = [
         'ovh-eu'        => [
             'apiDomain' => 'https://eu.api.ovh.com/1.0',
             'domain'    => 'https://www.ovh.com',
@@ -56,25 +56,13 @@ class Ovhcloud extends AbstractProvider
         if (empty($options['endpoint'])) {
             throw new UnexpectedValueException("Missing endpoint");
         }
-        if (!isset($this->endpoints[$options['endpoint']])) {
+        if (!isset(self::$endpoints[$options['endpoint']])) {
             throw new UnexpectedValueException(sprintf(
                 "Invalid endpoint: %s",
                 $options['endpoint']
             ));
         }
-        $endpoint = $this->endpoints[$options['endpoint']] ?? [];
-        if (empty($endpoint['domain'])) {
-            throw new UnexpectedValueException(sprintf(
-                "Missing domain in endpoint: %s",
-                $options['endpoint']
-            ));
-        }
-        if (empty($endpoint['apiDomain'])) {
-            throw new UnexpectedValueException(sprintf(
-                "Missing apiDomain in endpoint: %s",
-                $options['endpoint']
-            ));
-        }
+        $endpoint = self::$endpoints[$options['endpoint']];
         $this->domain = $endpoint['domain'];
         $this->apiDomain = $endpoint['apiDomain'];
 
@@ -85,27 +73,27 @@ class Ovhcloud extends AbstractProvider
      * Returns a PSR-7 request instance that is not authenticated.
      *
      * @param  string $method
-     * @param  string $uri
+     * @param  string $path
      * @param  array $options
      * @return RequestInterface
      */
-    public function getApiRequest($method, $uri, array $options = [])
+    public function getApiRequest($method, $path, array $options = [])
     {
-        return $this->getRequest($method, $this->apiDomain.$uri, $options);
+        return $this->getRequest($method, $this->apiDomain.$path, $options);
     }
 
     /**
      * Returns an authenticated PSR-7 request instance.
      *
      * @param  string $method
-     * @param  string $uri
+     * @param  string $path
      * @param  AccessTokenInterface|string $token
      * @param  array $options Any of "headers", "body", and "protocolVersion".
      * @return RequestInterface
      */
-    public function getAuthenticatedApiRequest($method, $uri, $token, array $options = [])
+    public function getAuthenticatedApiRequest($method, $path, $token, array $options = [])
     {
-        return $this->getAuthenticatedRequest($method, $this->apiDomain.$uri, $token, $options);
+        return $this->getAuthenticatedRequest($method, $this->apiDomain.$path, $token, $options);
     }
 
     /**

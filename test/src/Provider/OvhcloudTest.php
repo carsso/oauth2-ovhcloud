@@ -2,15 +2,16 @@
 
 namespace Carsso\OAuth2\Client\Test\Provider;
 
-use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
-use League\OAuth2\Client\Tool\QueryBuilderTrait;
 use Mockery as m;
-use PHPUnit\Framework\TestCase;
-
-use function http_build_query;
-use function json_encode;
-use function sprintf;
 use function uniqid;
+use function sprintf;
+use function json_encode;
+
+use UnexpectedValueException;
+use function http_build_query;
+use PHPUnit\Framework\TestCase;
+use League\OAuth2\Client\Tool\QueryBuilderTrait;
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 
 class OvhcloudTest extends TestCase
 {
@@ -18,14 +19,17 @@ class OvhcloudTest extends TestCase
 
     protected $provider;
 
+    protected $endpoint;
+
     protected function setUp(): void
     {
+        $this->endpoint = 'ovh-eu';
         $this->provider = new \Carsso\OAuth2\Client\Provider\Ovhcloud(
             [
             'clientId' => 'mock_client_id',
             'clientSecret' => 'mock_secret',
             'redirectUri' => 'none',
-            'endpoint' => 'ovh-eu',
+            'endpoint' => $this->endpoint,
             ]
         );
     }
@@ -34,6 +38,43 @@ class OvhcloudTest extends TestCase
     {
         m::close();
         parent::tearDown();
+    }
+
+    public function testExceptionThrownWhenMissingEndpoint(): void
+    {
+        $this->expectException(UnexpectedValueException::class);
+
+        new \Carsso\OAuth2\Client\Provider\Ovhcloud(
+            [
+                'clientId' => 'mock_client_id',
+                'clientSecret' => 'mock_secret',
+                'redirectUri' => 'none',
+            ]
+        );
+    }
+
+    public function testExceptionThrownWhenUnexistingEndpoint(): void
+    {
+        $this->expectException(UnexpectedValueException::class);
+
+        new \Carsso\OAuth2\Client\Provider\Ovhcloud(
+            [
+                'clientId' => 'mock_client_id',
+                'clientSecret' => 'mock_secret',
+                'redirectUri' => 'none',
+                'endpoint' => 'unexisting_endpoint',
+            ]
+        );
+    }
+
+    public function testEndpoint(): void
+    {
+        $endpoint = $this->provider::$endpoints[$this->endpoint];
+        $apiDomain = $endpoint['apiDomain'];
+        $domain = $endpoint['domain'];
+
+        $this->assertEquals($this->provider->domain, $domain);
+        $this->assertEquals($this->provider->apiDomain, $apiDomain);
     }
 
     public function testAuthorizationUrl(): void
@@ -61,6 +102,23 @@ class OvhcloudTest extends TestCase
         $encodedScope = $this->buildQueryString($query);
 
         $this->assertStringContainsString($encodedScope, $url);
+    }
+
+    public function testGetApiRequest(): void
+    {
+        $request = $this->provider->getApiRequest('GET', '/me');
+        $url = $this->provider::$endpoints[$this->endpoint]['apiDomain'] . '/me';
+
+        $this->assertEquals($url, $request->getUri()->__toString());
+    }
+
+    public function testGetAuthenticatedApiRequest(): void
+    {
+        $token = uniqid();
+        $request = $this->provider->getAuthenticatedApiRequest('GET', '/me', $token);
+        $url = $this->provider::$endpoints[$this->endpoint]['apiDomain'] . '/me';
+
+        $this->assertEquals($url, $request->getUri()->__toString());
     }
 
     public function testGetAuthorizationUrl(): void
