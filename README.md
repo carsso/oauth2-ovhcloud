@@ -23,7 +23,9 @@ Usage is the same as The League's OAuth client, using `\Carsso\OAuth2\Client\Pro
 
 ```php
 $provider = new Carsso\OAuth2\Client\Provider\Ovhcloud([
+    // See supported endpoints section below
     'endpoint'          => '{ovhcloud-endpoint}',
+    // See OAuth2 application registration in supported endpoints section below
     'clientId'          => '{ovhcloud-client-id}',
     'clientSecret'      => '{ovhcloud-client-secret}',
     'redirectUri'       => 'https://example.com/callback-url',
@@ -56,8 +58,8 @@ if (!isset($_GET['code'])) {
         // We got an access token, let's now get the user's details
         $user = $provider->getResourceOwner($token);
 
-        // Use these details to create a new profile
-        printf('Hello %s!', $user->getNickname());
+        // Use these details
+        printf('Hello %s (%s)!', $user->getName(), $user->getEmail());
 
     } catch (Exception $e) {
 
@@ -65,8 +67,17 @@ if (!isset($_GET['code'])) {
         exit('Oh dear...');
     }
 
-    // Use this to interact with an API on the users behalf
+    // Use this to interact with an API on the user behalf (see OVHcloud API calls section below)
     echo $token->getToken();
+
+    // Eventually refresh token if needed
+    /*
+    if ($token->hasExpired()) {
+        $newAccessToken = $provider->getAccessToken('refresh_token', [
+            'refresh_token' => $token->getRefreshToken()
+        ]);
+    }
+    */
 }
 ```
 
@@ -103,6 +114,35 @@ $request = $provider->getAuthenticatedApiRequest(
 );
 $response = $provider->getParsedResponse($request);
 ```
+
+## Supported endpoints
+
+### OVH Europe
+
+```'endpoint' => 'ovh-eu',```
+
+ * API documentation: https://eu.api.ovh.com
+ * API console: https://eu.api.ovh.com/console
+ * API community support: api-subscribe@ml.ovh.net
+ * OAuth2 application registration: https://eu.api.ovh.com/console/#/me/api/oauth2/client#POST
+
+### OVH US
+
+```'endpoint' => 'ovh-us',```
+
+ * API documentation: https://api.us.ovhcloud.com
+ * API console: https://api.us.ovhcloud.com/console
+ * OAuth2 application registration: https://api.us.ovhcloud.com/console/#/me/api/oauth2/client#POST
+
+### OVH North America / Canada
+
+```'endpoint' => 'ovh-ca',```
+
+ * API documentation: https://ca.api.ovh.com
+ * API console: https://ca.api.ovh.com/console
+ * API community support: api-subscribe@ml.ovh.net
+ * OAuth2 application registration: https://ca.api.ovh.com/console/#/me/api/oauth2/client#POST
+
 
 ## Testing
 
