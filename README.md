@@ -112,7 +112,7 @@ $request = $provider->getAuthenticatedApiRequest(
     '/me',
     $token
 );
-$response = $provider->getParsedResponse($request);
+$response = $provider->getResponse($request);
 ```
 
 ## Supported endpoints
